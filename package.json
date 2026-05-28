@@ -1,0 +1,42 @@
+{
+  "type": "module",
+  "main": "dist/index.js",
+  "scripts": {
+    "build": "tsc",
+    "start": "node dist/index.js",
+    "dev": "tsx watch src/index.ts",
+    "pm2:dev": "pm2 start ecosystem.config.cjs --only messaging-debug",
+    "pm2:prod": "pm2 start ecosystem.config.cjs --only messaging-prod"
+  },
+  "dependencies": {
+    "@aws-sdk/client-s3": "^3.864.0",
+    "@aws-sdk/s3-request-presigner": "^3.864.0",
+    "@types/cors": "^2.8.19",
+    "axios": "^1.11.0",
+    "bcrypt": "^6.0.0",
+    "circular-json": "^0.5.9",
+    "connect-timeout": "^1.9.1",
+    "cors": "^2.8.5",
+    "dayjs": "^1.11.13",
+    "dotenv": "^17.2.1",
+    "express": "^5.1.0",
+    "firebase-admin": "^13.4.0",
+    "ip-range-check": "^0.2.0",
+    "moment": "^2.30.1",
+    "multer": "^2.0.2",
+    "mysql2": "^3.14.3",
+    "node-fetch": "^3.3.2",
+    "uuid": "^11.1.0",
+    "winston": "^3.17.0"
+  },
+  "devDependencies": {
+    "@types/bcrypt": "^6.0.0",
+    "@types/circular-json": "^0.4.0",
+    "@types/express": "^5.0.0",
+    "@types/multer": "^2.0.0",
+    "@types/node": "^24.2.0",
+    "ts-node": "^10.9.2",
+    "tsx": "^4.20.3",
+    "typescript": "^5.9.2"
+  }
+}
