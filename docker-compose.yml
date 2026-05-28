@@ -1,0 +1,42 @@
+# docker-compose.yml  (Node.js 런타임용 dev 컨테이너)
+# 로컬 개발용 Compose 설정 — 소스 bind-mount + tsx watch hot reload
+# 생성: project-init.sh  (LANGUAGE=node)
+#
+# 사용:
+#   docker compose up -d        # 백그라운드 기동
+#   docker compose logs -f      # 로그 추적
+#   docker compose down         # 종료
+#
+# 동작:
+#   - node:20-alpine 위에 현재 폴더를 /app 으로 bind-mount
+#   - 첫 기동 시 `npm install` 후 `npm run dev`(tsx watch) 로 hot reload
+#   - host ${HOST_PORT} → container 3000 매핑 → 브라우저는 http://localhost:${HOST_PORT}
+#
+# container_name 은 프로젝트 폴더명 기반(`messaging-corneropen-com-dev`) — 같은 서버에 배포되는 다른 프로젝트와
+# dev 컨테이너 이름이 충돌하지 않도록 일관 규약을 따른다.
+#
+# 서버 배포용 설정은 docker-compose.prod.yml 로 분리되어 있다.
+
+services:
+    api:
+        image: node:20-alpine
+        container_name: messaging-corneropen-com-dev
+        working_dir: /app
+        command: sh -c "npm install && npm run dev"
+        ports:
+            # host(로컬 PC) 측 포트 — up.sh 가 .env.deploy.local 의 HOST_PORT 를 export 해서 주입.
+            # 같은 머신에서 여러 프로젝트를 동시에 띄울 때 이 값이 달라야 충돌 없음.
+            # HOST_PORT 미설정 시 project-init 입력값 fallback (docker compose 직접 호출 대비).
+            - "${HOST_PORT:-3000}:3000"
+        environment:
+            # .env 의 PORT 값과 무관하게 컨테이너 내부 listen 포트를 3000 으로 고정.
+            - PORT=3000
+            # bind-mount 환경(특히 macOS)에서 tsx watch 가 변경 감지를 놓치는 경우 대비.
+            - CHOKIDAR_USEPOLLING=true
+        env_file:
+            - .env
+        volumes:
+            # BUILD_CONTEXT 는 project-init 의 DEPLOY_SUBDIR 에 따라 결정 — DEPLOY_SUBDIR 가 비어 있으면 `.`, 지정되면 `..`.
+            - .:/app
+            # 호스트 node_modules(macOS arm64) 가 컨테이너(linux) 와 충돌하지 않도록 격리.
+            - /app/node_modules

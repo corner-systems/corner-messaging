@@ -1,0 +1,31 @@
+# docker-compose.prod.yml
+# 서버 배포용 Compose 설정 (ECR 이미지 사용) — web 타입 (상시 기동)
+# 서버 위치: /home/corner/sites/messaging.corneropen.com/docker-compose.prod.yml
+# 생성: project-init.sh (PROJECT_TYPE=web)
+#
+# 호출:
+#   - server-deploy.sh 가 `docker compose -f docker-compose.prod.yml up -d` 형태로 사용
+#   - 로컬에서는 사용하지 않는다 (로컬은 docker-compose.yml = dev 컨테이너).
+#
+# 포트 매핑 규칙:
+#   - 외부(host) 포트 ${PROXY_PORT} : nginx → docker 호스트 포트 (nginx proxy_pass 와 일치)
+#   - 내부(container) 포트 3000    : 항상 고정 — 앱은 PORT=3000 으로 listen
+
+services:
+    api:
+        image: 471112982346.dkr.ecr.ap-northeast-2.amazonaws.com/corner-systems/corner-messaging:${IMAGE_TAG:-latest}
+        container_name: messaging-corneropen-com
+        restart: unless-stopped
+        ports:
+            - "${PROXY_PORT:?PROXY_PORT not set}:3000"
+        environment:
+            - PORT=3000
+        env_file:
+            - .env
+        volumes:
+            - ./.env:/app/.env:ro
+        logging:
+            driver: json-file
+            options:
+                max-size: "10m"
+                max-file: "5"
